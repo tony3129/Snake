@@ -26,12 +26,14 @@ function draw(){
 
 //used to create the snake segments, and placed
 function drawSnake(){
-    snake.forEach((segment)=>{
-        const snakeElement = createGameElement('div', 
-        'snake');
-        setPosition(snakeElement, segment);
-        gameBoard.appendChild(snakeElement);
-    })
+    if(gameStart){
+        snake.forEach((segment)=>{
+            const snakeElement = createGameElement('div', 
+            'snake');
+            setPosition(snakeElement, segment);
+            gameBoard.appendChild(snakeElement);
+        })
+    }
 }
 
 //create each game element container to later to placed in html
@@ -48,10 +50,12 @@ function setPosition(element, pos){
 }
 //to create food elements, and place them on the board
 function drawFood(){
-    const foodElement = createGameElement('div', 
-    'food');
-    setPosition(foodElement, food);
-    gameBoard.appendChild(foodElement);
+    if(gameStart){
+        const foodElement = createGameElement('div', 
+            'food');
+            setPosition(foodElement, food);
+            gameBoard.appendChild(foodElement);
+    }
 }
 
 //create food, if it overlaps the snake element, change positions
@@ -91,7 +95,7 @@ function movement(){
     //if the snake gets the food, increase the size, and get new food position
     if(head.x === food.x && head.y === food.y){
         currentScore++;
-        score.textContent = currentScore;
+        score.textContent = currentScore.toString().padStart(3,'0');
         clearInterval(gameInterval);
         increaseSpeed();
         setFoodPosition();
@@ -142,7 +146,7 @@ function handleKeyPress(event){
         }
     }
 }
-
+//increase how fast the snake goes eat food eaten
 function increaseSpeed(){
     if(gameSpeed>100){
         gameSpeed-=10;
@@ -151,7 +155,7 @@ function increaseSpeed(){
         gameSpeed-=15;
     }
 }
-
+//if snake goes into its own body, or borders the game resets
 function checkCollision(){
     const head = snake[0];
     if(head.x <1 || head.x > gridSize || head.y <1 || head.y > gridSize){
@@ -164,19 +168,21 @@ function checkCollision(){
         }
     }
 }
-
+//start the game over from the beginning, show highscore
 function resetGame(){
-    snake = [{x: 10, y: 10}]
-    setFoodPosition();
-    gameSpeed = 200;
+    clearInterval(gameInterval);
     gameStart = false;
+    snake = [{x: 10, y: 10}]
+    gameSpeed = 200;
     highScore.style.display = "block"
+    instructions.style.display = "block"
+    logo.style.display = "block"
     if(currentScore > currentHighScore){
        currentHighScore = currentScore;
-       highScore.textContent = currentHighScore;
+       highScore.textContent = currentHighScore.toString().padStart(3,'0');
     }
     currentScore = 0;
-    score.textContent = 0;
+    score.textContent = currentScore.toString().padStart(3,'0');
 }
 
 //watch for valid key presses

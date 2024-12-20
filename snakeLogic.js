@@ -2,21 +2,26 @@
 const gameBoard = document.getElementById("game-board");
 const instructions = document.getElementById("instructions");
 const logo = document.getElementById("logo");
+const highScore = document.getElementById("highScore");
+const score = document.getElementById("score");
 
 //game elements
 let gridSize = 20;
 let snake = [{x: 10, y: 10}]
 let food = {};
 let direction = 'down';
+let previousDirection = direction;
 let gameInterval;
 let gameSpeed = 200;
 let gameStart = false;
+let currentScore = 0;
+let currentHighScore = 0;
 
 //draw map, and game elements
 function draw(){
     gameBoard.innerHTML = "";
     drawSnake();
-    drawFood()
+    drawFood();
 }
 
 //used to create the snake segments, and placed
@@ -49,10 +54,6 @@ function drawFood(){
     gameBoard.appendChild(foodElement);
 }
 
-//check if there are food elements already, if there are remove it
-//so html doesn't get bloated
-
-
 //create food, if it overlaps the snake element, change positions
 //clear food if there is any to avoid html bloat
 function setFoodPosition(){
@@ -63,7 +64,7 @@ function setFoodPosition(){
         }
         food.x = Math.floor(Math.random() * gridSize) + 1
         food.y = Math.floor(Math.random() * gridSize) + 1
-    } while (snake.forEach((segment)=>{
+    } while (snake.some((segment)=>{
         return segment.x === food.x && segment.y === food.y
     }));
 }
@@ -71,29 +72,32 @@ function setFoodPosition(){
 //snake movement
 function movement(){
     const head = {...snake[0]};
-    switch (direction) {
-        case 'right':
-            head.x++;
-            break;
-        case 'left':
-            head.x--;
-            break;
-        //y-- for up, because grid starts at 1 from the top, and counts to 20 going down
-        case 'up':
-            head.y--;
-            break;
-        case 'down':
-            head.y++;
-            break;
+
+    if (direction === 'right' && 
+    !(snake.length > 1 && direction === 'left')) {
+        head.x++;
+    } else if (direction === 'left' && 
+    !(snake.length > 1 && direction === 'right')) {
+        head.x--;
+    } else if (direction === 'down' && 
+    !(snake.length > 1 && direction === 'up')) {
+        head.y++;
+    } else if (direction === 'up' && 
+    !(snake.length > 1 && direction === 'down')) {
+        head.y--;
     }
     //add new position to snake array
     snake.unshift(head);
     //if the snake gets the food, increase the size, and get new food position
     if(head.x === food.x && head.y === food.y){
+        currentScore++;
+        score.textContent = currentScore;
+        clearInterval(gameInterval);
+        increaseSpeed();
         setFoodPosition();
-        clearInterval();
         gameInterval = setInterval(()=>{
             movement();
+            checkCollision();
             draw();
         }, gameSpeed)
     }
@@ -102,12 +106,78 @@ function movement(){
     }
 }
 
+//start game through pressing spacebar
 function startGame(){
     gameStart = true;
     instructions.style.display= "none";
     logo.style.display="none";
+    setFoodPosition();
     gameInterval = setInterval(()=>{
         movement();
+        checkCollision();
         draw();
     }, gameSpeed)
 }
+
+//handle when valid keys are pressed
+function handleKeyPress(event){
+    if((!gameStart && event.code === "Space") ||
+    !gameStart && event.key === " "){
+        startGame();
+    }
+    else{
+        switch (event.key){
+            case 'ArrowUp':
+                direction = 'up';
+                break;
+            case 'ArrowDown':
+                direction = 'down';
+                break;
+            case 'ArrowLeft':
+                direction = 'left';
+                break;
+            case 'ArrowRight':
+                direction = 'right';
+                break;
+        }
+    }
+}
+
+function increaseSpeed(){
+    if(gameSpeed>100){
+        gameSpeed-=10;
+    }
+    else{
+        gameSpeed-=15;
+    }
+}
+
+function checkCollision(){
+    const head = snake[0];
+    if(head.x <1 || head.x > gridSize || head.y <1 || head.y > gridSize){
+        resetGame();
+    }
+
+    for(let i =1; i<snake.length; i++){
+        if(head.x === snake[i].x && head.y === snake[i].y){
+            resetGame();
+        }
+    }
+}
+
+function resetGame(){
+    snake = [{x: 10, y: 10}]
+    setFoodPosition();
+    gameSpeed = 200;
+    gameStart = false;
+    highScore.style.display = "block"
+    if(currentScore > currentHighScore){
+       currentHighScore = currentScore;
+       highScore.textContent = currentHighScore;
+    }
+    currentScore = 0;
+    score.textContent = 0;
+}
+
+//watch for valid key presses
+document.addEventListener('keydown', handleKeyPress);

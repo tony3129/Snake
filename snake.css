@@ -1,4 +1,4 @@
-body{
+#snakeContainer{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -49,12 +49,13 @@ body{
 .scores{
     display: flex;
     justify-content: space-between;
+    gap:20px;
 }
 
 #score,
 #highScore{
     font-size: 40px;
-    font-weight: bolder;  
+    font-weight: bolder;
     color: #416b41;
 }
 
@@ -75,6 +76,7 @@ body{
     position: absolute;
     width: 400px;
     height: 400px;
-    margin-top: 33px;
+    margin-top: 18px;
     z-index: -1;
+    border-radius: 0px;
 }
